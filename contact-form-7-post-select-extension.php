@@ -233,22 +233,6 @@ class CF7_PSE_Post_Select {
 	 */
 	public static function wpcf7_tg_pane_postselect( $type = 'postselect' ) {
 	?>
-	<?php $getPostCustom=get_post_custom(1); // Get all the data ?>
-	<?php
-	    foreach($getPostCustom as $name=>$value) {
-
-	        echo "<strong>".$name."</strong>"."  =>  ";
-
-	        foreach($value as $nameAr=>$valueAr) {
-	                echo "<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-	                echo $nameAr."  =>  ";
-	                echo var_dump($valueAr);
-	        }
-
-	        echo "<br /><br />";
-
-	    }
-	?>
 		<div class="control-box">
 		<fieldset>
 		<legend></legend>
