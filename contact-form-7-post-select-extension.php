@@ -11,7 +11,7 @@
  * @link      http://clarknikdelpowell.com
  * @since     1.0.0
  * @author    Glenn Welser <glenn@clarknikdelpowell.com>
- * @copyright 2014 Glenn Welser
+ * @copyright 2015 Glenn Welser
  * @license   GPL-2.0+
  *
  * @wordpress-plugin
@@ -74,6 +74,27 @@ class CF7_PSE_Post_Select {
 		}
 
 		add_action( 'admin_init', array( __CLASS__, 'wpcf7_add_tag_generator_postselect'), 15 );
+		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'admin_enqueue_scripts'), 20 );
+
+	}
+
+	/**
+	* Enqueue scripts.
+	*
+	* Adds required javascript file to footer of CF7 edit page.
+	*
+	* @since 1.2.0
+	*/
+	public static function admin_enqueue_scripts() {
+
+		if ( !isset($_GET['page']) ) {
+			return;
+		}
+
+		if ( $_GET['page'] != 'wpcf7' ) {
+			return;
+		}
+		wp_enqueue_script( 'cf7_pse_script', plugins_url( '/js/app.js', __FILE__ ), array('jquery'), false, true );
 
 	}
 
@@ -117,15 +138,7 @@ class CF7_PSE_Post_Select {
 
 		$atts['aria-invalid'] = $validation_error ? 'true' : 'false';
 
-		$defaults = array();
-
-		if ( $matches = $tag->get_first_match_option( '/^default:([0-9_]+)$/' ) ) {
-			$defaults = explode( '_', $matches[1] );
-		}
-
-		$multiple = $tag->has_option( 'multiple' );
 		$include_blank = $tag->has_option( 'include_blank' );
-		$first_as_label = $tag->has_option( 'first_as_label' );
 
 		$values = $tag->values;
 		$labels = $tag->labels;
@@ -140,10 +153,8 @@ class CF7_PSE_Post_Select {
 		if ( $empty_select || $include_blank ) {
 			array_unshift( $labels, '---' );
 			array_unshift( $values, '' );
-		} elseif ( $first_as_label ) {
-			$values[0] = '';
 		}
-
+		
 		$html = '';
 		
 		$get = $tag->get_option('get', 'class', TRUE);
@@ -251,11 +262,18 @@ class CF7_PSE_Post_Select {
 
 		<tr>
 		<th scope="row"><label for="tag-generator-panel-<?= $type; ?>-post_type">Post type</label></th>
-		<td><select name="post_type" class="post_typevalue oneline selectoption" id="tag-generator-panel-<?= $type; ?>-post_type"><?php CF7_PSE_Post_Select::post_type_options(); ?></select></td>
+		<td><select name="post_typeselect" data-value="post_type" class="oneline selectoption" id="tag-generator-panel-<?= $type; ?>-post_type"><?php CF7_PSE_Post_Select::post_type_options(); ?></select>
+		<input type="hidden" name="post_type" class="post_typevalue oneline option" id="tag-generator-panel-<?= $type; ?>-post_type" /></td>
 		</tr>
 		<tr>
-		<th scope="row"><label for="tag-generator-panel-<?= $type; ?>-post_meta">Meta value</label></th>
-		<td><input type="text" name="post_meta" class="post_metavalue oneline option" id="tag-generator-panel-<?= $type; ?>-post_meta" /></td>
+		<th scope="row"><label for="tag-generator-panel-<?= $type; ?>-option_value">Option value</label></th>
+		<td><input type="text" name="option_value" class="option_valuevalue oneline option" id="tag-generator-panel-<?= $type; ?>-option_value" /></td>
+		</tr>
+		<tr>
+		<th scope="row"></th>
+		<td><fieldset>
+		<legend class="screen-reader-text">Include blank</legend>
+		<label><input type="checkbox" name="include_blank" class="option" value="on" />&nbsp;Include a blank item as the first option</label></fieldset></td>
 		</tr>
 		<tr>
 		<th scope="row"><label for="tag-generator-panel-<?= $type; ?>-default">Default value</label></th>
@@ -314,21 +332,25 @@ class CF7_PSE_Post_Select {
 
 		);
 		
-		$q = new WP_Query( $args );
+		$posts = get_posts( $args );
 
 		$output = [];
 
-		while ($q->have_posts()) {
+		foreach ( $posts as $p ) {
 
-			$q->the_post();
+			$title = $p->post_title;
+			$value = $p->ID;
 
-			$id    = get_the_ID();
-			$title = get_the_title();
-			$value = get_post_meta( $id, $meta, true );
+			$pos = strpos( $meta, '_meta_' );
+			if ( $pos === 0 ) {
+				$value = get_post_meta( $p->ID, str_replace('_meta_', '', $meta), true );
+			}
 
 			$output[] = [ $title, $value ];
 
 		}
+
+		var_dump($output);
 
 		return $output;
 
@@ -356,9 +378,9 @@ class CF7_PSE_Post_Select {
 		$tag = new WPCF7_Shortcode( $tag_array );
 
 		$post_type = $tag->get_option('post_type', 'class', true);
-		$post_meta = $tag->get_option('post_meta', 'class', true);
+		$option_value = $tag->get_option('option_value', 'class', true);
 
-		$post_data = CF7_PSE_Post_Select::get_post_type($post_type, $post_meta);
+		$post_data = CF7_PSE_Post_Select::get_post_type($post_type, $option_value);
 
 		foreach ($post_data as $entry) {
 			$tag_array['raw_values'][] = $entry[0].'|'.$entry[1];
