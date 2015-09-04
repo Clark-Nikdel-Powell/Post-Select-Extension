@@ -350,8 +350,6 @@ class CF7_PSE_Post_Select {
 
 		}
 
-		var_dump($output);
-
 		return $output;
 
 	}
