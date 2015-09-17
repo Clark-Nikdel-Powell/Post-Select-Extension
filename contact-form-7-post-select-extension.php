@@ -341,9 +341,13 @@ class CF7_PSE_Post_Select {
 			$title = $p->post_title;
 			$value = $p->ID;
 
-			$pos = strpos( $meta, '_meta_' );
-			if ( $pos === 0 ) {
-				$value = get_post_meta( $p->ID, str_replace('_meta_', '', $meta), true );
+			if ( $meta ) {
+				$pos = strpos( $meta, '_meta_' );
+				if ( $pos === 0 ) {
+					$value = get_post_meta( $p->ID, str_replace('_meta_', '', $meta), true );
+				} else {
+					$value = $p->$meta;
+				}
 			}
 
 			$output[] = [ $title, $value ];
