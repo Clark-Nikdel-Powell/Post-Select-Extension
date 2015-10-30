@@ -246,7 +246,12 @@ class CF7_PSE_Post_Select {
 	?>
 		<div class="control-box">
 		<fieldset>
-		<legend></legend>
+                    <legend>
+                        Generate a form-tag for a drop-down menu with options from the specified post type. For more details, see <a href="">Post Select Drop-down</a>.<br>
+                        <b>Option value:</b> Field to use for selected value. Defaults to post id. Prepend '_meta_' to use a meta field. <i>Example: _meta_email</i><br>
+                        <b>Default value:</b> Specify the default selected value.<br>
+                        <b>Query string:</b> Use a query string for the default selected value.<br>
+                    </legend>
 		<table class="form-table">
 		<tbody>
 		<tr>
